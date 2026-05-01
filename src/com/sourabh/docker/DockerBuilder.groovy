@@ -41,7 +41,11 @@ class DockerBuilder implements Serializable {
 
         this.dockerfile = cfg.dockerfile ?: 'Dockerfile'
         this.context    = cfg.context    ?: '.'
-        this.imageName  = required(cfg, 'imageName')
+        // this.imageName  = required(cfg, 'imageName')
+        this.imageName = cfg.get('imageName')
+        if (!this.imageName) {
+            throw new IllegalArgumentException("DockerBuilder: 'imageName' is required. Got: ${cfg}")
+        }
         this.tag        = cfg.tag        ?: 'latest'
         this.registry   = cfg.registry   ?: ''
         this.buildArgs  = (cfg.buildArgs ?: [:]) as Map
@@ -124,11 +128,11 @@ class DockerBuilder implements Serializable {
         return "'" + s.replace("'", "'\\''") + "'"
     }
 
-    private String required(Map cfg, String key) {
-    def value = cfg.get(key)
-    if (value == null || value.toString().trim() == '') {
-        throw new IllegalArgumentException("DockerBuilder: '${key}' is required. Got: ${cfg}")
-    }
-    return value.toString()
-    }
+    // private String required(Map cfg, String key) {
+    // def value = cfg.get(key)
+    // if (value == null || value.toString().trim() == '') {
+    //     throw new IllegalArgumentException("DockerBuilder: '${key}' is required. Got: ${cfg}")
+    // }
+    // return value.toString()
+    // }
 }
