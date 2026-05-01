@@ -124,7 +124,7 @@ class DockerBuilder implements Serializable {
         return "'" + s.replace("'", "'\\''") + "'"
     }
 
-    private static String required(Map cfg, String key) {
+    private String required(Map cfg, String key) {
         if (!cfg[key]) {
             throw new IllegalArgumentException("DockerBuilder: '${key}' is required")
         }
