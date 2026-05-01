@@ -35,8 +35,11 @@ class SbomGenerator implements Serializable {
     SbomGenerator(steps, Map cfg) {
         this.steps         = steps
         this.log           = new Logger(steps, 'sbom')
-
-        this.imageRef      = required(cfg, 'imageRef')
+        this.imageRef      = cfg.get('imageRef')
+        if (!this.imageRef) {
+            throw new IllegalArgumentException("SbomGenerator: 'imageRef' is required. Got: ${cfg}")
+        }
+        // this.imageRef      = required(cfg, 'imageRef')
         this.outputDir     = cfg.outputDir     ?: 'sbom'
         this.outputFile    = cfg.outputFile    ?: 'sbom.cdx.json'
         this.format        = cfg.format        ?: 'cyclonedx'
