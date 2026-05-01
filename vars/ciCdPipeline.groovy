@@ -54,7 +54,7 @@ def call(Map cfg = [:]) {
         agent any
         options {
             timestamps()
-            ansiColor('xterm')
+            // ansiColor('xterm') requires the AnsiColor plugin; uncomment if you've installed it.
             disableConcurrentBuilds()
         }
         environment {
