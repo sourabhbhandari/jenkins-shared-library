@@ -1,0 +1,32 @@
+// Minimal example using the all-in-one composite step.
+// Drop this file at the root of an application repo as `Jenkinsfile`.
+
+@Library('jenkins-shared-lib@main') _
+
+ciCdPipeline(
+    app: [
+        name:       'my-app',
+        dockerfile: 'Dockerfile',
+        context:    '.',
+        chartDir:   'charts/my-app'
+    ],
+    registry: [
+        url:   'localhost:5000',
+        push:  true
+        // credentialsId: 'docker-registry-creds'   // uncomment for private registries
+    ],
+    sbom: [
+        format: 'cyclonedx'
+    ],
+    minio: [
+        endpoint:      'http://localhost:9001',
+        bucket:        'sboms',
+        credentialsId: 'minio-creds'
+    ],
+    argocd: [
+        repoUrl:        'https://github.com/sourabh/my-app-config.git',
+        targetRevision: 'main',
+        chartPath:      'charts/my-app',
+        namespace:      'my-app'
+    ]
+)

@@ -1,0 +1,18 @@
+<h2>generateSbom</h2>
+<p>Generates a CycloneDX (or SPDX) SBOM for a Docker image using <a href="https://aquasecurity.github.io/trivy/">Trivy</a>.</p>
+
+<h3>Parameters</h3>
+<ul>
+  <li><b>imageRef</b> (required) — image to scan, e.g. <code>my-app:42</code></li>
+  <li><b>format</b> — <code>cyclonedx</code> (default) or <code>spdx-json</code></li>
+  <li><b>outputDir</b> — directory for the SBOM file (default <code>sbom</code>)</li>
+  <li><b>outputFile</b> — file name (default <code>sbom.cdx.json</code>)</li>
+  <li><b>trivyVersion</b> — version of <code>aquasec/trivy</code> image (default <code>0.50.0</code>)</li>
+  <li><b>useDockerized</b> — run trivy via Docker (default <code>true</code>)</li>
+</ul>
+
+<h3>Example</h3>
+<pre>
+def sbomPath = generateSbom(imageRef: 'my-app:42')
+archiveArtifacts artifacts: sbomPath
+</pre>

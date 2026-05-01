@@ -1,0 +1,40 @@
+<h2>ciCdPipeline</h2>
+<p>End-to-end Declarative Pipeline composed from this library's primitives:
+<code>dockerBuild → generateSbom → uploadSbomToMinio → helmPackage → argoCdDeploy</code>.</p>
+
+<h3>Configuration (Map of Maps)</h3>
+<pre>
+ciCdPipeline(
+  app: [
+    name:       'my-app',
+    dockerfile: 'Dockerfile',
+    context:    '.',
+    chartDir:   'charts/my-app'
+  ],
+  registry: [
+    url:           'localhost:5000',
+    credentialsId: 'docker-registry-creds',
+    push:          true
+  ],
+  sbom:  [ format: 'cyclonedx' ],
+  minio: [
+    endpoint:      'http://localhost:9001',
+    bucket:        'sboms',
+    credentialsId: 'minio-creds'
+  ],
+  argocd: [
+    repoUrl:        'https://github.com/sourabh/my-app-config.git',
+    targetRevision: 'main',
+    chartPath:      'charts/my-app',
+    namespace:      'my-app'
+  ]
+)
+</pre>
+<p>Each block (minio, argocd) is optional — a stage runs only when the corresponding
+config block is provided.</p>
+
+<h3>Required credentials in Jenkins</h3>
+<ul>
+  <li><b>minio-creds</b> — Username with password (username = MinIO access key, password = secret key)</li>
+  <li><b>docker-registry-creds</b> — Username with password (only if pushing to a private registry)</li>
+</ul>

@@ -1,0 +1,31 @@
+<h2>dockerBuild</h2>
+<p>Builds a Docker image from a Dockerfile and (optionally) pushes it to a registry.</p>
+
+<h3>Parameters (Map)</h3>
+<ul>
+  <li><b>imageName</b> (required) — image name, e.g. <code>my-app</code></li>
+  <li><b>dockerfile</b> — path to the Dockerfile (default <code>Dockerfile</code>)</li>
+  <li><b>context</b> — build context directory (default <code>.</code>)</li>
+  <li><b>tag</b> — image tag (default <code>latest</code>)</li>
+  <li><b>registry</b> — registry prefix, e.g. <code>localhost:5000</code> or <code>ghcr.io/me</code></li>
+  <li><b>buildArgs</b> — Map of <code>--build-arg</code> values</li>
+  <li><b>push</b> — boolean, push after build (default <code>false</code>)</li>
+  <li><b>pull</b> / <b>noCache</b> / <b>platform</b> / <b>extraTags</b></li>
+  <li><b>credentialsId</b> — Jenkins username/password credential for registry login</li>
+</ul>
+
+<h3>Returns</h3>
+<p>The full image reference (e.g. <code>localhost:5000/my-app:42</code>).</p>
+
+<h3>Example</h3>
+<pre>
+def imageRef = dockerBuild(
+  imageName: 'my-app',
+  dockerfile: 'Dockerfile',
+  context: '.',
+  tag: env.BUILD_NUMBER,
+  registry: 'localhost:5000',
+  push: true,
+  buildArgs: ['APP_ENV': 'prod']
+)
+</pre>

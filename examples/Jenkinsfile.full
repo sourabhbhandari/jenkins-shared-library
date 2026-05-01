@@ -1,0 +1,114 @@
+// Hand-rolled example showing every step of the pipeline individually.
+// Use this as a reference when you need more control than `ciCdPipeline` offers.
+
+@Library('jenkins-shared-lib@main') _
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        ansiColor('xterm')
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        APP_NAME    = 'my-app'
+        REGISTRY    = 'localhost:5000'
+        IMAGE_TAG   = "${env.BUILD_NUMBER}"
+        CHART_DIR   = 'charts/my-app'
+        ARGO_REPO   = 'https://github.com/sourabh/my-app-config.git'
+        MINIO_URL   = 'http://localhost:9001'
+        MINIO_BUCKET = 'sboms'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build Docker image') {
+            steps {
+                script {
+                    env.IMAGE_REF = dockerBuild(
+                        imageName:  env.APP_NAME,
+                        dockerfile: 'Dockerfile',
+                        context:    '.',
+                        tag:        env.IMAGE_TAG,
+                        registry:   env.REGISTRY,
+                        push:       true,
+                        // credentialsId: 'docker-registry-creds',
+                        buildArgs:  ['APP_ENV': 'prod']
+                    )
+                    echo "Built ${env.IMAGE_REF}"
+                }
+            }
+        }
+
+        stage('Generate SBOM') {
+            steps {
+                script {
+                    env.SBOM_PATH = generateSbom(
+                        imageRef: env.IMAGE_REF,
+                        format:   'cyclonedx',
+                        outputDir: 'sbom',
+                        outputFile: 'sbom.cdx.json'
+                    )
+                }
+                archiveArtifacts artifacts: "${env.SBOM_PATH}", fingerprint: true
+            }
+        }
+
+        stage('Upload SBOM to MinIO') {
+            steps {
+                uploadSbomToMinio(
+                    endpoint:      env.MINIO_URL,
+                    bucket:        env.MINIO_BUCKET,
+                    objectKey:     "${env.APP_NAME}/${env.IMAGE_TAG}/sbom.cdx.json",
+                    file:          env.SBOM_PATH,
+                    credentialsId: 'minio-creds'
+                )
+            }
+        }
+
+        stage('Package Helm chart') {
+            steps {
+                script {
+                    env.CHART_PKG = helmPackage(
+                        chartDir:   env.CHART_DIR,
+                        version:    "1.0.${env.IMAGE_TAG}",
+                        appVersion: env.IMAGE_TAG,
+                        imageRepo:  "${env.REGISTRY}/${env.APP_NAME}",
+                        imageTag:   env.IMAGE_TAG
+                    )
+                }
+                archiveArtifacts artifacts: "${env.CHART_PKG}", fingerprint: true
+            }
+        }
+
+        stage('Deploy via ArgoCD') {
+            steps {
+                argoCdDeploy(
+                    appName:        env.APP_NAME,
+                    namespace:      env.APP_NAME,
+                    argoNamespace:  'argocd',
+                    repoUrl:        env.ARGO_REPO,
+                    targetRevision: 'main',
+                    chartPath:      env.CHART_DIR,
+                    destServer:     'https://kubernetes.default.svc',
+                    imageRepo:      "${env.REGISTRY}/${env.APP_NAME}",
+                    imageTag:       env.IMAGE_TAG,
+                    sync:           true,
+                    waitHealthy:    true,
+                    waitTimeoutSec: 300
+                )
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished for ${env.APP_NAME} build #${env.BUILD_NUMBER}"
+        }
+    }
+}

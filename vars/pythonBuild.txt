@@ -1,0 +1,38 @@
+<h2>pythonBuild</h2>
+<p>Runs the bundled Python build orchestrator (<code>resources/com/sourabh/scripts/build.py</code>)
+which performs: <code>docker build</code> → Trivy SBOM (CycloneDX) → MinIO upload.</p>
+
+<h3>Required</h3>
+<ul>
+  <li><b>imageName</b> — image name</li>
+</ul>
+
+<h3>Optional</h3>
+<ul>
+  <li><b>tag</b> (default <code>env.BUILD_NUMBER</code> or <code>latest</code>)</li>
+  <li><b>registry</b>, <b>dockerfile</b>, <b>context</b>, <b>push</b></li>
+  <li><b>sbomFormat</b> (default <code>cyclonedx</code>)</li>
+  <li><b>sbomDir</b>, <b>sbomFile</b></li>
+  <li><b>minioEndpoint</b>, <b>minioBucket</b>, <b>minioObjectKey</b></li>
+  <li><b>minioCredentialsId</b> — Jenkins username/password credential whose username
+    is the MinIO access key and whose password is the MinIO secret key (default <code>minio-creds</code>)</li>
+  <li><b>pythonBin</b> (default <code>python3</code>)</li>
+</ul>
+
+<h3>Returns</h3>
+<p>Map with <code>imageRef</code>, <code>sbomPath</code>, <code>minioObject</code>.</p>
+
+<h3>Example</h3>
+<pre>
+def out = pythonBuild(
+  imageName:    'my-app',
+  tag:          env.BUILD_NUMBER,
+  registry:     'localhost:5000',
+  push:         true,
+  minioEndpoint: 'http://localhost:9001',
+  minioBucket:  'sboms',
+  minioCredentialsId: 'minio-creds'
+)
+echo "Built ${out.imageRef}"
+echo "SBOM at minio: ${out.minioObject}"
+</pre>

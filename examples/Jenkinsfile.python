@@ -1,0 +1,55 @@
+// Example using the Python orchestrator step. The library writes resources/com/sourabh/scripts/build.py
+// into the workspace and runs it. This is useful when you'd rather have a single Python entrypoint
+// (e.g. so you can also run the same build locally with `python3 build.py --config build-config.json`).
+
+@Library('jenkins-shared-lib@main') _
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build + SBOM + MinIO upload (Python)') {
+            steps {
+                script {
+                    def out = pythonBuild(
+                        imageName:    'my-app',
+                        tag:          env.BUILD_NUMBER,
+                        registry:     'localhost:5000',
+                        push:         true,
+                        dockerfile:   'Dockerfile',
+                        context:      '.',
+                        sbomFormat:   'cyclonedx',
+                        minioEndpoint:      'http://localhost:9001',
+                        minioBucket:        'sboms',
+                        minioCredentialsId: 'minio-creds'
+                    )
+                    echo "Image:  ${out.imageRef}"
+                    echo "SBOM:   ${out.sbomPath}"
+                    echo "MinIO:  ${out.minioObject}"
+                }
+            }
+        }
+
+        stage('Helm package + ArgoCD deploy') {
+            steps {
+                script {
+                    helmPackage(
+                        chartDir:   'charts/my-app',
+                        version:    "1.0.${env.BUILD_NUMBER}",
+                        appVersion: env.BUILD_NUMBER,
+                        imageRepo:  'localhost:5000/my-app',
+                        imageTag:   env.BUILD_NUMBER
+                    )
+                }
+                argoCdDeploy(
+                    appName:    'my-app',
+                    repoUrl:    'https://github.com/sourabh/my-app-config.git',
+                    chartPath:  'charts/my-app',
+                    targetRevision: 'main',
+                    imageRepo:  'localhost:5000/my-app',
+                    imageTag:   env.BUILD_NUMBER
+                )
+            }
+        }
+    }
+}

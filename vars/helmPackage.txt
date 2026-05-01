@@ -1,0 +1,25 @@
+<h2>helmPackage</h2>
+<p>Lints and packages a Helm chart. Optionally rewrites <code>image.repository</code> and
+<code>image.tag</code> in <code>values.yaml</code> using yq (run via Docker).</p>
+
+<h3>Required</h3>
+<ul><li><b>chartDir</b></li></ul>
+
+<h3>Optional</h3>
+<ul>
+  <li><b>version</b>, <b>appVersion</b></li>
+  <li><b>imageRepo</b>, <b>imageTag</b> — overrides applied to <code>values.yaml</code></li>
+  <li><b>outputDir</b> (default <code>helm-pkg</code>)</li>
+  <li><b>lint</b> (default <code>true</code>)</li>
+</ul>
+
+<h3>Example</h3>
+<pre>
+def tgz = helmPackage(
+  chartDir:   'charts/my-app',
+  version:    "1.0.${env.BUILD_NUMBER}",
+  appVersion: env.BUILD_NUMBER,
+  imageRepo:  'localhost:5000/my-app',
+  imageTag:   env.BUILD_NUMBER
+)
+</pre>

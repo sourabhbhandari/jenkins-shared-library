@@ -1,0 +1,21 @@
+# Build artifacts produced by the library at runtime
+.jenkins-shared-lib/
+sbom/
+helm-pkg/
+*.tgz
+
+# Local IDE / editor
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Python (when running the orchestrator locally)
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Test output
+test-output/

@@ -1,0 +1,43 @@
+<h2>argoCdDeploy</h2>
+<p>Renders an ArgoCD <code>Application</code> manifest from the bundled template, applies it
+to the cluster (default destination is <code>https://kubernetes.default.svc</code> — i.e. the
+in-cluster API used by docker-desktop's local k8s), and optionally triggers a sync and waits
+until the app reports <code>Healthy</code> &amp; <code>Synced</code>.</p>
+
+<h3>Required</h3>
+<ul>
+  <li><b>appName</b></li>
+  <li><b>repoUrl</b> — Git URL holding the Helm chart</li>
+  <li><b>chartPath</b> — path to the chart inside the repo</li>
+</ul>
+
+<h3>Optional</h3>
+<ul>
+  <li><b>namespace</b> (default = appName)</li>
+  <li><b>argoNamespace</b> (default <code>argocd</code>)</li>
+  <li><b>targetRevision</b> (default <code>HEAD</code>)</li>
+  <li><b>destServer</b> (default in-cluster)</li>
+  <li><b>imageRepo</b>, <b>imageTag</b> — passed as Helm parameters to override values.yaml</li>
+  <li><b>sync</b> (default <code>true</code>) — trigger sync after apply</li>
+  <li><b>waitHealthy</b> (default <code>true</code>), <b>waitTimeoutSec</b> (default 300)</li>
+</ul>
+
+<h3>Example</h3>
+<pre>
+argoCdDeploy(
+  appName:    'my-app',
+  namespace:  'my-app',
+  repoUrl:    'https://github.com/sourabh/my-app-config.git',
+  chartPath:  'charts/my-app',
+  targetRevision: 'main',
+  imageRepo:  'localhost:5000/my-app',
+  imageTag:   env.BUILD_NUMBER
+)
+</pre>
+
+<h3>Pre-requisites on the agent</h3>
+<ul>
+  <li><code>kubectl</code> with kubeconfig pointing at docker-desktop's cluster</li>
+  <li>ArgoCD installed in the <code>argocd</code> namespace</li>
+  <li>(Optional) <code>argocd</code> CLI logged-in for nicer sync output</li>
+</ul>

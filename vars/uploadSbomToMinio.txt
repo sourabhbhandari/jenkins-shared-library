@@ -1,0 +1,28 @@
+<h2>uploadSbomToMinio</h2>
+<p>Uploads a file (typically the SBOM) to a MinIO bucket using the <code>mc</code> client run via Docker.</p>
+
+<h3>Required</h3>
+<ul>
+  <li><b>endpoint</b> — e.g. <code>http://localhost:9001</code></li>
+  <li><b>bucket</b></li>
+  <li><b>objectKey</b></li>
+  <li><b>file</b> — local path to the file</li>
+</ul>
+
+<h3>Optional</h3>
+<ul>
+  <li><b>credentialsId</b> — Jenkins "Username with password" credential id (default <code>minio-creds</code>).
+    Username = access key, password = secret key.</li>
+  <li><b>alias</b>, <b>createBucketIfMissing</b>, <b>mcImage</b></li>
+</ul>
+
+<h3>Example</h3>
+<pre>
+uploadSbomToMinio(
+  endpoint:  'http://localhost:9001',
+  bucket:    'sboms',
+  objectKey: "${env.JOB_NAME}/${env.BUILD_NUMBER}/sbom.cdx.json",
+  file:      'sbom/sbom.cdx.json',
+  credentialsId: 'minio-creds'
+)
+</pre>
