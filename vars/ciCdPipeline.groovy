@@ -51,7 +51,12 @@ def call(Map cfg = [:]) {
     String appName = app.name ?: error('ciCdPipeline: app.name is required')
 
     pipeline {
-        agent any
+        agent  {       
+        docker {
+            image 'docker:24.0'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
+        }
         options {
             timestamps()
             // ansiColor('xterm') requires the AnsiColor plugin; uncomment if you've installed it.
