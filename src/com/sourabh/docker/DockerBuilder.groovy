@@ -125,9 +125,10 @@ class DockerBuilder implements Serializable {
     }
 
     private String required(Map cfg, String key) {
-        if (!cfg[key]) {
-            throw new IllegalArgumentException("DockerBuilder: '${key}' is required")
-        }
-        return cfg[key]
+    def value = cfg.get(key)
+    if (value == null || value.toString().trim() == '') {
+        throw new IllegalArgumentException("DockerBuilder: '${key}' is required. Got: ${cfg}")
+    }
+    return value.toString()
     }
 }
