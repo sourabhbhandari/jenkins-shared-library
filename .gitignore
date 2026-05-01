@@ -1,6 +1,5 @@
 # Build artifacts produced by the library at runtime
 .jenkins-shared-lib/
-sbom/
 helm-pkg/
 *.tgz
 
